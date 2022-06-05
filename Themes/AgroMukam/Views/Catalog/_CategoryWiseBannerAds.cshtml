@@ -1,0 +1,44 @@
+﻿@*@using Nop.Services.Advertisements
+    @using Nop.Services.Media
+    @inject IAdvertisementService _advertisementService
+    @inject IPictureService _pictureService
+
+    @{
+        var currentCategoryId = this.ViewData["currentCategoryId"];
+        var categoryLevel = this.ViewData["categoryLevel"];
+        var categoryId = Convert.ToInt32(currentCategoryId);
+        var level = Convert.ToInt32(categoryLevel);
+        var adPlacementId = level == 1 ? 60 : 70;
+
+        var advertisements = _advertisementService.GetAllAdvertisements(null, categoryId, adPlacementId, 1, null, null, 0, 6);
+        var bannerAd = advertisements.Where(x =>
+        {
+            return x.EndDateUtc > DateTime.Now;
+        }).FirstOrDefault();
+    }
+
+    <div class="container pt-3">
+        <div class="row">
+            <div class="col-12">
+                @if (bannerAd != null)
+                {
+                    var imgUrl = _pictureService.GetPictureUrl(bannerAd.PictureId);
+                    <a href="@bannerAd.HyperLink">
+                        <img src="@imgUrl" class="img-fluid d-block m-auto" style="width: 100%; height: 90px;" loading="lazy">
+                    </a>
+                }
+                else
+                {
+                    <img src="https://via.placeholder.com/1200x90?text=Want+to+See+Your+Ad+Here?" class="img-fluid d-block m-auto" style="width: 100%; height: 90px;" loading="lazy">
+                }
+            </div>
+        </div>
+    </div>*@
+
+<div class="container pt-3">
+    <div class="row">
+        <div class="col-12">
+            <img src="https://via.placeholder.com/1200x90?text=Want+to+See+Your+Ad+Here?" class="img-fluid d-block m-auto" style="width: 100%; height: 90px;" loading="lazy">
+        </div>
+    </div>
+</div>

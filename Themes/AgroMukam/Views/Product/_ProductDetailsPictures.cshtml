@@ -1,0 +1,36 @@
+﻿@model ProductDetailsModel
+@{
+    Html.AddScriptParts(ResourceLocation.Footer, "~/Themes/AgroMukam/Content/js/smoothproducts.min.js");
+    Html.AddCssFileParts("~/Themes/AgroMukam/Content/css/smoothproducts.css");
+}
+<div class="gallery">
+    @await Component.InvokeAsync("Widget", new { widgetZone = PublicWidgetZones.ProductDetailsBeforePictures, additionalData = Model })
+
+    <div class="sp-loading"><img src="/Themes/AgroMukam/Content/images/ajax-loader-small.gif" alt=""><br>LOADING IMAGES</div>
+    <div class="sp-wrap w-100">
+
+        @if (Model.PictureModels.Count > 1)
+        {
+            @foreach (var picture in Model.PictureModels)
+            {
+                <a class="thumb-item" href="@picture.FullSizeImageUrl" alt="@picture.AlternateText" title="@picture.Title">
+                    <img src="@picture.FullSizeImageUrl" alt="@picture.AlternateText" title="@picture.Title" />
+                </a>
+            }
+        }
+        else
+        {
+            <a href="@Model.DefaultPictureModel.FullSizeImageUrl" title="@Model.DefaultPictureModel.Title" id="main-product-img-lightbox-anchor-@Model.Id">
+                    <img alt="@Model.DefaultPictureModel.AlternateText" src="@Model.DefaultPictureModel.ImageUrl" title="@Model.DefaultPictureModel.Title" id="main-product-img-@Model.Id" />
+                </a>
+        }
+
+    </div>
+    <script asp-location="Footer">
+        $(document).ready(function () {
+            $('.sp-wrap').smoothproducts();  
+        });
+    </script>
+
+    @await Component.InvokeAsync("Widget", new { widgetZone = PublicWidgetZones.ProductDetailsAfterPictures, additionalData = Model })
+</div>

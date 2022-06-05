@@ -1,0 +1,31 @@
+﻿@*@using Nop.Core
+    @using Nop.Core.Domain.Advertisements
+    @using Nop.Services.Advertisements
+    @using Nop.Services.Media
+    @inject IAdvertisementService _advertisementService
+    @inject IPictureService _pictureService
+
+    @{
+        IPagedList<Advertisement> advertisements = _advertisementService.GetAllAdvertisements(null, 0, 80, 0, null, null, 0, 6);
+        var ad = advertisements.Where(x =>
+        {
+            return x.EndDateUtc > DateTime.Now;
+        }).FirstOrDefault();
+    }
+
+        <div class="login-page-banner-ads pl-5 pr-5">
+            @if (ad != null)
+            {
+                var imgUrl = _pictureService.GetPictureUrl(ad.PictureId);
+                <a href="@ad.HyperLink">
+                    <img src="@imgUrl" style="max-height: 90px;" class="d-block m-auto img-fluid">
+                </a>
+            }
+            else
+            {
+                <img src="https://via.placeholder.com/728x90?text=Leaderboard+(728x90)+size+ads+here?" style="max-height: 90px;" class="d-block m-auto img-fluid">
+            }
+        </div>*@
+<div class="login-page-banner-ads pl-5 pr-5">
+    <img src="https://via.placeholder.com/728x90?text=Leaderboard+(728x90)+size+ads+here?" style="max-height: 90px;" class="d-block m-auto img-fluid">
+</div>

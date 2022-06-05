@@ -1,0 +1,298 @@
+﻿@model VendorModel
+@using Nop.Core.Domain.Customers
+@using Nop.Core.Domain.Seo
+@using Nop.Services.Catalog
+@using Nop.Services.Customers
+@using Nop.Web.Factories
+@inject Nop.Core.IWebHelper webHelper
+@inject SeoSettings seoSettings
+@inject ICustomerService _customerService
+@inject IProductService _productService
+@inject IProductModelFactory _productModelFactory
+@{
+    Layout = "_ColumnsOne";
+
+    //title
+    Html.AddTitleParts(Model.SystemName);
+    //meta
+    Html.AddMetaDescriptionParts(Model.MetaDescription);
+    Html.AddMetaKeywordParts(Model.MetaKeywords);
+    //page class
+    Html.AppendPageCssClassParts("html-vendor-page");
+
+    if (seoSettings.CanonicalUrlsEnabled)
+    {
+        var vendorUrl = Url.RouteUrl("Vendor", new { SeName = Model.SeName }, webHelper.GetCurrentRequestProtocol()).ToLowerInvariant();
+        Html.AddCanonicalUrlParts(vendorUrl, seoSettings.QueryStringInCanonicalUrlsEnabled);
+    }
+
+    var customers = await _customerService.GetAllCustomersAsync(vendorId: Model.Id);
+    var customerId = customers.Any() ? customers.FirstOrDefault().Id : 0;
+    var joinDate = customers.Any() ? customers.FirstOrDefault().CreatedOnUtc : DateTime.Now;
+
+    IList<CustomerRole> customerRoles = new List<CustomerRole>();
+    if (customers.Any())
+        customerRoles = await _customerService.GetCustomerRolesAsync(customers.FirstOrDefault());
+    var isVerified = false;
+    if (customerRoles.Any())
+        isVerified = customerRoles.FirstOrDefault(x => x.Name == "Verified Vendor") != null;
+
+
+    var param = ViewContext.HttpContext.Request.Query["cid"];
+    if (!String.IsNullOrEmpty(param))
+    {
+        var cid = Convert.ToInt32(param);
+        if (cid > 0)
+        {
+            IList<int> categoryIds = new List<int>();
+            categoryIds.Add(cid);
+            var products = await _productService.SearchProductsAsync(vendorId: Model.Id,
+                storeId: 0,
+                categoryIds: categoryIds);
+            Model.CatalogProductsModel.Products = (await _productModelFactory.PrepareProductOverviewModelsAsync(products)).ToList();
+        }
+    }
+
+}
+
+<style>
+
+    .page-vendord-store {
+        min-height: 650px;
+    }
+
+    .vendor-store-header {
+        background: url("/Themes/AgroMukam/Content/images/home_agro_section_bg2.jpg");
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+    }
+
+        .vendor-store-header .card {
+            max-width: 650px;
+        }
+
+    .vendor-logo {
+        width: 65px;
+    }
+
+    /* .btn-product-classification {
+        background-color: rgba(105, 164, 31, .2) !important;
+    }*/
+
+</style>
+
+<div class="page page-vendord-store">
+
+    @* store header *@
+    <div class="vendor-store-header py-4">
+        <div class="container-lg">
+            <div class="card">
+                <div class="card-body py-2">
+                    <div class="d-flex flex-row">
+                        <div class="d-flex align-items-center pr-4">
+                            @{
+                                var title = Model.SystemName;
+                                var altText = Model.SystemName;
+                                <img src="/Themes/AgroMukam/Content/images/icons8-user-64.png"
+                                     alt="@altText" title="@title"
+                                     class="vendor-logo" />
+                            }
+                        </div>
+                        <div class="d-flex flex-fill flex-column justify-content-center">
+                            <h5 class="text-muted">
+                                <span>@Model.SystemName </span>
+                            </h5>
+                            @if (isVerified)
+                            {
+                                <span class="text-light-green"> <i class="fas fa-check-circle"></i> Verified </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted"> <i class="fas fa-eye-slash"></i> Unverified </span>
+                            }
+                        </div>
+                        @*contact vendor*@
+                        @if (Model.AllowCustomersToContactVendors)
+                        {
+                            <div class="d-flex flex-column justify-content-center align-items-center pr-2" onclick="contactVendor()">
+                                <img src="/Themes/AgroMukam/Content/images/icons8-chat-64.png"
+                                     alt="Chat with @Model.SystemName"
+                                     width="45"
+                                     height="45">
+                                <span class="text-muted-x">Chat Now</span>
+                            </div>
+
+                            <script asp-location="Footer">
+                            function contactVendor() {
+                                launchChatWithVendor(JSON.parse('@customerId'), '@Model.SystemName');
+                            }
+                            </script>
+                        }
+                        <div class="d-flex flex-column justify-content-center align-items-center pl-2">
+                            <img src="/Themes/AgroMukam/Content/images/icons8-new-store-80.png"
+                                 alt="Chat with @Model.SystemName"
+                                 width="45"
+                                 height="45">
+                            <span class="text-muted-x">Follow</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @* store navigation *@
+    <nav class="navbar navbar-expand navbar-light bg-white">
+        <div class="container-lg">
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item dropdown mr-4">
+                        <a class="nav-link dropdown-toggle btn-product-classification bg-light" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-bars pr-2"></i>
+                            Product Classification
+                            <i class="fas fa-caret-down ml-5"></i>
+                        </a>
+                        <div class="dropdown-menu vc-list-item" aria-labelledby="dropdownMenuLink">
+                            <a href="#" class="dropdown-item" data-cid="0">All</a>
+                            @*@foreach (var category in Model.Categories)
+                            {
+                                <a href="#" class="dropdown-item" data-cid="@category.Id">@category.Name</a>
+                            }*@
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link v-home" href="#">Vendor Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link v-all-products" href="#">All Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link v-profile" href="#">Profile</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container vendor-products mt-5" style="display: none;">
+        @await Component.InvokeAsync("Widget", new { widgetZone = PublicWidgetZones.VendorDetailsTop, additionalData = Model })
+        @*description*@
+        @*@if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <div class="vendor-description">
+                    @Html.Raw(Model.Description)
+                </div>
+            }*@
+
+        @*@if (Model.CatalogProductsModel.Products.Count > 0)
+        {
+            @await Html.PartialAsync("_CatalogSelectors", Model.CatalogProductsModel.PagingFilteringContext)
+        }
+        else
+        {
+            <h2 class="store-empty"><span>@Model.SystemName</span>'s Store is Empty!</h2>
+        }*@
+        @*product list*@
+        @if (Model.CatalogProductsModel.Products.Count > 0)
+        {
+            <div class="@("product-grid")">
+                <div class="item-grid row">
+                    @foreach (var product in Model.CatalogProductsModel.Products)
+                    {
+                        <div class="item-box add-border px-1 py-1 col-6 col-sm-4 col-lg-3 col-xl-2">
+                            @await Html.PartialAsync("_ProductBox", product)
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        @*@{
+            var pager = Html.Pager(Model.PagingFilteringContext).QueryParam("pagenumber");
+        }
+        @if (!pager.IsEmpty())
+        {
+            <div class="pager">
+                @pager
+            </div>
+        }*@
+        @await Component.InvokeAsync("Widget", new { widgetZone = PublicWidgetZones.VendorDetailsBottom, additionalData = Model })
+    </div>
+
+    <div class="container vendor-profile mt-3" style="display: none;">
+        <div class="bg-light">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row no-gutters">
+                        <div class="col-md-6 col-lg-auto">
+                            <h5 class="text-muted-x"> Seller Size </h5>
+                            <i class="fas fa-signal fa-2x my-2"></i>
+                            <span> &nbsp; </span>
+                        </div>
+                        <div class="col-md-6 col-lg-auto px-4">
+                            <h5 class="text-muted-x"> Joined </h5>
+                            <h3 class="align-self-center mr-2 my-2">@joinDate.ToString("MMM") </h3>
+                            <span>@joinDate.ToString("yyy")</span>
+                        </div>
+                        <div class="col-12 col-lg px-3">
+                            <h5 class="text-muted-x"> Shipped on Time </h5>
+                            <h3 class="mr-2 my-2">70% </h3>
+                            <span> &nbsp; </span>
+                        </div>
+                        <div class="col-12 col-lg px-3">
+                            <h5 class="text-muted-x"> Order Cancellation </h5>
+                            <i class="fas fa-people-carry fa-2x my-2"></i>
+                            <span class="d-block">0%</span>
+                        </div>
+                        <div class="col-md-6 col-lg-auto px-3">
+                            <h5 class="text-muted-x"> Chat </h5>
+                            <i class="fas fa-comments fa-2x my-2"></i>
+                            <span class="d-block text-light-green">100.00% response rate</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script asp-location="Footer">
+
+    function setView() {
+        if (location.hash.includes('profile')) {
+            $('.vendor-profile').show();
+            $('.vendor-products').hide();
+        } else {
+            $('.vendor-profile').hide();
+            $('.vendor-products').show();
+        }
+    }
+
+    $(document).ready(function () {
+
+        setView();
+        $('.product-viewmode').remove();
+
+        $('.vc-list-item a').click(function (e) {
+            var cid = $(this).data('cid');
+            window.location = `?cid=${cid}`;
+            e.preventDefault();
+        });
+
+        $('.v-profile').click(function (e) {
+            window.location.hash = '#profile';
+            $('.sub-categories-wrapper a').removeClass('text-light-green');
+            $(this).addClass('text-light-green');
+            setView();
+            e.preventDefault();
+        });
+
+        $('.v-home, .v-all-products').click(function (e) {
+            window.location.hash = '';
+            $('.sub-categories-wrapper a').removeClass('text-light-green');
+            $(this).addClass('text-light-green');
+            setView();
+            e.preventDefault();
+        });
+    });
+</script>

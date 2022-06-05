@@ -1,0 +1,162 @@
+﻿@model TopMenuModel
+@{
+    Model.Categories = Model.Categories
+        .Where(x => x.IncludeInTopMenu
+            && !x.Name.Contains("Service")
+            && !x.Name.Contains("Courier"))
+        .ToList();
+}
+
+<div class="">
+    <div class="nav flex-column" id="v-pills-tab" role="tablist"
+         aria-orientation="vertical">
+
+        <!--  -->
+        @*<a class="nav-link bg-light active" id="v-pills-a-tab"
+           data-toggle="pill" href="#v-pills-a" role="tab"
+           aria-controls="v-pills-a" aria-selected="true">
+            <img src="/Themes/AgroMukam/Content/images/category-icons/announcement.png" alt="" loading="lazy">
+            Highlights
+        </a>*@
+
+        @foreach (var category in Model.Categories)
+        {
+            <a class="nav-link bg-light" id="v-pills-@category.Id-tab"
+               data-toggle="pill" href="#v-pills-@category.Id" role="tab"
+               aria-controls="v-pills-@category.Id" aria-selected="true">
+                <img src="@category.PictureModel.ImageUrl" alt="" loading="lazy">
+                <span style="vertical-align: middle;">
+                    @category.Name
+                    <i class="fas fa-external-link-alt href-icon ml-2" onclick="setLocation('@category.SeName')"></i>
+                </span>
+            </a>
+        }
+
+
+    </div>
+</div>
+
+<div class="flex-grow-1">
+    <div class="tab-content" id="v-pills-tabContent">
+
+        <!--  -->
+        @*<div class="tab-pane fade show active" id="v-pills-a" role="tabpanel"
+             aria-labelledby="v-pills-a-tab">
+
+            <div class="menu-tab-content-wrap">
+                <div class="d-flex">
+                    <div class="col-8 menu-items-wrap p-4">
+                        <!--  -->
+                        <h6 class="text-muted"> MVV (Most Valuable Vendor) </h6>
+                        <hr>
+                        <div class="row row-cols-6">
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/100x100?text=A"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/100x100?text=B"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/100x100?text=C"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/100x100?text=D"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                        </div>
+
+                        <!--  -->
+                        <h6 class="text-muted mt-3"> Trending Categories </h6>
+                        <hr>
+                        <div class="row row-cols-4">
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/155x155?text=Category+A"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/155x155?text=Category+B"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/155x155?text=Category+C"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/155x155?text=Category+D"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/550x250?text=Flash+Sale+Deals"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/550x250?text=AgroMukam+Special"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-4 p-4 menu-ads-wrap">
+                        <!--  -->
+                        <h6 class="text-muted"> Product of the week </h6>
+                        <hr>
+                        <div class="row row-cols-2">
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/200x200?text=Product+A"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/200x200?text=Random+Add"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/200x200?text=Product+C"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                            <div class="col px-1 py-1">
+                                <img src="https://via.placeholder.com/200x200?text=Product+D"
+                                     alt="" class="img-fluid" loading="lazy">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>*@
+
+        @foreach (var category in Model.Categories)
+        {
+            <div class="tab-pane fade" id="v-pills-@category.Id" role="tabpanel"
+                 aria-labelledby="v-pills-@category.Id-tab">
+                <div class="menu-tab-content-wrap">
+                    <div class="d-flex">
+                        <div class="col-8 menu-items-wrap p-2">
+                            @if (category.SubCategories.Count > 0)
+                            {
+                                @await Html.PartialAsync("_Category.MegaMenu", category.SubCategories)
+                            }
+                        </div>
+                        <div class="col-4 menu-ads-wrap pl-2 border-left">
+                            <div class="w-100">
+                                @await Component.InvokeAsync("Widget", new { widgetZone = "agroads_megamenu_category_wise", additionalData = category.Id })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script src="/Themes/AgroMukam/Content/js/tree.js" asp-location="Footer"></script>
+<script asp-location="Footer">
+    $(document).ready(function () {
+        $('.shop-by-category').treed();
+    });
+</script>

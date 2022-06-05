@@ -1,0 +1,74 @@
+﻿@model string
+@using Nop.Core.Domain.Customers
+@inject Nop.Core.IWorkContext _workContext
+@inject Nop.Services.Common.IGenericAttributeService _genericAttributeService
+@inject Nop.Services.Customers.ICustomerService _customerService
+@{
+    var customer = await _workContext.GetCurrentCustomerAsync();
+    var customerName = await _genericAttributeService
+        .GetAttributeAsync<string>(customer, NopCustomerDefaults.FirstNameAttribute);
+    var isVendor = await _customerService.IsVendorAsync(customer);
+}
+
+<style>
+    .customer-sidenav a {
+        color: rgba(0, 0, 0, .6) !important;
+    }
+
+        .customer-sidenav a:hover,
+        .customer-sidenav a.active {
+            color: #69A41F !important;
+        }
+
+    .customer-sidenav li {
+        list-style-type: none;
+    }
+</style>
+
+<div class="customer-sidenav">
+
+    <div class="greet">
+        <span class="text-muted"> @T("MyAccount.Navigation.Hi"), @customerName </span>
+    </div>
+
+    <h6 class="mt-3">
+        <a href="@Url.RouteUrl("CustomerInfoWelcome")" class="welcome">@T("MyAccount.Navigation.ManageMyAccount")</a>
+    </h6>
+    <ul class="pl-3 pt-1">
+        <li> <a href="@Url.RouteUrl("CustomerInfo")" class="my-profile">@T("MyAccount.Navigation.MyProfile")</a> </li>
+        <li> <a href="@Url.RouteUrl("CustomerAddresses")" class="address-book">@T("MyAccount.Navigation.AddressBook")</a> </li>
+        <li> <a href="@Url.RouteUrl("CustomerChangePassword")" class="address-book">@T("AgroCustomer.PasswordRecovery.ChangePassword")</a> </li>
+    </ul>
+
+    <h6 class="mt-3">
+        <a href="@Url.RouteUrl("CustomerOrders")" class="my-orders">@T("MyAccount.Navigation.MyOrders")</a>
+    </h6>
+
+    <h6 class="mt-3">
+        <a href="@Url.RouteUrl("CustomerProductReviews")" class="my-reviews">@T("MyAccount.Navigation.MyReviews")</a>
+    </h6>
+
+    <h6 class="mt-3">
+        <a href="@Url.RouteUrl("WishList")" class="my-wishlist">@T("MyAccount.Navigation.MyWishlist")</a>
+    </h6>
+
+    <h6 class="mt-3">
+        <a href="@Url.RouteUrl("Prescriptions")" class="prescriptions">@T("MyAccount.Navigation.Prescriptions")</a>
+    </h6>
+
+    <h6 class="mt-3">
+        <a href="@Url.RouteUrl("Nop.Plugin.Misc.AgroReferAndEarn.ReferAndEarn")" class="refer-and-earn">@T("MyAccount.Navigation.ReferAndEarn")</a>
+    </h6>
+    <ul class="pl-3 pt-1">
+        <li> <a href="@Url.RouteUrl("CustomerRewardPoints")" class="reward-points"> @T("MyAccount.Navigation.MyRewardPoints") </a> </li>
+    </ul>
+
+</div>
+
+<script asp-location="Footer">
+    $(document).ready(function () {
+        $('.side-2 > .card').removeClass('card');
+        const selector = '.' + `@Model`;
+        $(selector).addClass('active');
+    });
+</script>
